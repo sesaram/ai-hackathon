@@ -6,5 +6,5 @@ def makePersonBox(input):
         a = i + 1
         l = results.loc[i]
         
-        result[f"person{a}"] = {"left_bottom" : (l["xmin"], l["ymin"]), "right_bottom" : (l["xmax"], l["ymin"]), "left_top" : (l["xmin"], l["ymin"]), "right_top" : (l["xmax"],l["ymax"])}
+        result[f"person{a}"] = {"left_bottom" : (l["xmin"], l["ymin"]), "right_bottom" : (l["xmax"], l["ymin"]), "left_top" : (l["xmin"], l["ymax"]), "right_top" : (l["xmax"],l["ymax"])}
     return result
