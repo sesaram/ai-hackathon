@@ -8,6 +8,7 @@ model = torch.hub.load('yolov5', 'custom', path='yolov5s.pt', source='local')
 cap = cv2.VideoCapture(0)
 w = round(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 h = round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+TIME_CONST = int(w/7)
 CONST_CENTER = 300 * 345
 CONST_1PX = (180 / 345) / 300
 
@@ -31,7 +32,9 @@ while cap.isOpened():
         diff_center = abs(320 - mid[0]).item() * raw_distance * CONST_1PX
         distance = sqrt(raw_distance ** 2 + diff_center ** 2)
         
-        print(key, distance)
+        direct = (mid[0] // TIME_CONST) + 9
+
+        print(key, distance+"미터", direct+"시 방향")
 
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     cv2.imshow('mouse and keyboard', image)
