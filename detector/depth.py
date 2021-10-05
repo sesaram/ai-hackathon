@@ -9,8 +9,11 @@ cap = cv2.VideoCapture(0)
 w = round(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 h = round(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 TIME_CONST = int(w/7)
-CONST_CENTER = 300 * 345
-CONST_1PX = (180 / 345) / 300
+
+
+CONST_HEIGHT = 250
+CONST_CENTER = 450 * CONST_HEIGHT
+CONST_1PX = 180 / CONST_CENTER
 
 while cap.isOpened():
     success, image = cap.read()
@@ -19,6 +22,11 @@ while cap.isOpened():
         continue
 
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    image_320_320 = image[0:320, 0:320]
+
+    image = image_320_320
+
     results = model(image)
     result = makePersonBox(results)
 
@@ -34,7 +42,7 @@ while cap.isOpened():
         
         direct = (mid[0] // TIME_CONST) + 9
 
-        print(key, distance+"미터", direct+"시 방향")
+        print(key, str(distance)+"cm", str(direct)+"시 방향")
 
     image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
     cv2.imshow('mouse and keyboard', image)
