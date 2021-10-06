@@ -25,10 +25,12 @@ import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -58,10 +60,10 @@ public class MainActivity extends AppCompatActivity {
 
     // 뷰 객체
     private TextureView textureView;
+    private TextView box0,box1,box2,box3,score,classIndex,distancePerson, directionPerson;
 
     // 화면 각도 상수
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
-
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
@@ -83,8 +85,11 @@ public class MainActivity extends AppCompatActivity {
     private Handler mBackgroundHandler;
     private HandlerThread mBackgroundThread;
 
-    private TextView box0,box1,box2,box3,score,classIndex;
-    String[] indexToClass= {"person", "bicycle", "car", "motorcycle", "airplane", "bus", "train", "truck", "boat", "traffic light",
+    //음성 처리 객체
+    MediaPlayer mediaPlayer;
+
+    //AI Class 값 목록
+    String[] indexToClass= {"사람", "자전거", "자동차", "오토바이", "비행기", "버스", "기차", "트럭", "boat", "신호등",
             "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow",
             "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee",
             "skis", "snowboard", "sports ball", "kite", "baseball bat", "baseball glove", "skateboard", "surfboard",
@@ -92,6 +97,10 @@ public class MainActivity extends AppCompatActivity {
             "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "chair", "couch",
             "potted plant", "bed", "dining table", "toilet", "tv", "laptop", "mouse", "remote", "keyboard", "cell phone",
             "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"};
+
+    //거리 계산
+    Distance distClass;
+
     // 액티비티 생명주기
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -105,7 +114,9 @@ public class MainActivity extends AppCompatActivity {
         box3 = findViewById(R.id.box3);
         score = findViewById(R.id.score);
         classIndex = findViewById(R.id.classIndex);
-
+        distancePerson = findViewById(R.id.distance);
+        directionPerson = findViewById(R.id.direction);
+        distClass = new Distance();
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
         } else {
@@ -241,9 +252,8 @@ public class MainActivity extends AppCompatActivity {
 
     // 리스너 콜백 함수
     private TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
-        //
         boolean processing;
-        //
+
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
             try {
@@ -265,11 +275,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSurfaceTextureUpdated(@NonNull SurfaceTexture surface) {
-//            System.out.println("on surface textrue updated....");
             if(processing){
                 return ;
             }
+
+            if(mediaPlayer!=null){
+                return ;
+            }
+
             processing = true;
+
             Bitmap photo = textureView.getBitmap();
             photo = getResizedBitmap(photo,320);
             Bitmap bmp = photo;
@@ -343,44 +358,120 @@ public class MainActivity extends AppCompatActivity {
                                 index = j;
                             }
                         }
-                        if(maxValue > 0.45){
+                        if(maxValue > 0.70){ //0.45에서 0.70로 올렸음 너무 이상한거 많이 나옴
                             tmp.add(maxValue);
                             tmp.add(index);
-                            if(classFilter.contains(index)==false&&index<80.0){
+                            float dist = distClass.getDistance(tmp.get(0),tmp.get(1),tmp.get(2),tmp.get(3));
+                            float direct = distClass.getDirection(tmp.get(0),tmp.get(2));
+                            tmp.add(dist);
+                            tmp.add(direct);
+                            if(classFilter.contains(index)==false&&index<80.0&&dist<6.0&&direct<14&&direct>9){//5m정도로 거름
                                 result.add(tmp.toArray());
                                 classFilter.add(index);
                             }
                         }
                         tmp.clear();
                     }
-                    String resultStr = "";
-                    runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable() { //UI바꾸는건 mainThread에서 해야하기 때문에 이 쓰레드에서 작업을 해주어야 오류가 안남.
                         @Override
                         public void run() {
                             for(int i=0; i<result.size(); i++){
-//                        resultStr = "";
-//                        resultStr += "[";
-//                        resultStr += result.get(i)[0]+", ";
-//                        resultStr += result.get(i)[1]+", ";
-//                        resultStr += result.get(i)[2]+", ";
-//                        resultStr += result.get(i)[3]+"], Score: ";
-//                        resultStr += result.get(i)[4]+", Class: ";
                                 if((float)result.get(i)[5]>80.0){
                                     continue;
                                 }
                                 float indexFloat = (float) result.get(i)[5];
                                 int indexInt = (int)indexFloat;
-//                        resultStr += indexToClass[indexInt]+"\n";
+                                if(indexInt>=10){
+                                    return ;
+                                }
+                                if(indexInt == 0){
+                                    distancePerson.setText(String.format("%.3f", result.get(i)[6])+"m");
+                                    directionPerson.setText(""+Math.round((float)result.get(i)[7])+"시 방향");
+                                }
+                                //출력 된 놈들 중에 확률 제일 높은 놈이 배열의 맨 앞에 오도록 계산하기.
+                                box0.setText(String.format("%.3f", result.get(i)[0]));
+                                box1.setText(String.format("%.3f", result.get(i)[1]));
+                                box2.setText(String.format("%.3f", result.get(i)[2]));
+                                box3.setText(String.format("%.3f", result.get(i)[3]));
+                                score.setText(String.format("%.3f", result.get(i)[4]));
+                                classIndex.setText(indexToClass[indexInt]);
 
-                                box0.setText(""+result.get(i)[0]);
-                                box1.setText(""+result.get(i)[1]);
-                                box2.setText(""+result.get(i)[2]);
-                                box3.setText(""+result.get(i)[3]);
-                                score.setText(""+result.get(i)[4]);
-                                classIndex.setText(""+indexToClass[indexInt]);
-
+                                if(mediaPlayer!=null){
+                                    return ;
+                                }
+                                if(indexInt<10){
+                                    if(indexInt==0){
+//                                        float dist = (float)result.get(i)[6];
+//                                        int direct = (int)((float)result.get(i)[7]);
+//                                        switch (direct){
+//                                            case 10:
+//                                                mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.clock10);
+//                                                break;
+//                                            case 11:
+//                                                mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.clock11);
+//                                                break;
+//                                            case 12:
+//                                                mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.clock12);
+//                                                break;
+//                                            case 13:
+//                                                mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.clock1);
+//                                                break;
+//                                            case 14:
+//                                                mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.clock2);
+//                                                break;
+//                                        }
+//                                        mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(1.25f));
+//                                        mediaPlayer.start();
+//                                        while(mediaPlayer.isPlaying()){}
+//                                        mediaPlayer.reset();
+//                                        mediaPlayer.release();
+//                                        if(dist<2){
+//                                            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.about1m);
+//                                        }else if(dist<3){
+//                                            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.about2m);
+//                                        }else if(dist<4){
+//                                            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.about3m);
+//                                        }else if(dist<5){
+//                                            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.about4m);
+//                                        }else {
+//                                            mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.about5m);
+//                                        }
+//                                        mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(1.25f));
+//                                        mediaPlayer.start();
+//                                        while(mediaPlayer.isPlaying()){}
+//                                        mediaPlayer.reset();
+//                                        mediaPlayer.release();
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.thereisperson);
+                                    }else if(indexInt==1){
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.bicycle);
+                                    }else if(indexInt==2) {
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.car);
+                                    }else if(indexInt==3){
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.motorcycle);
+                                    }else if(indexInt==5){
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.bus);
+                                    }else if(indexInt==7){
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.truck);
+                                    }else if(indexInt==9){
+                                        mediaPlayer = MediaPlayer.create(MainActivity.this, R.raw.trafficlight);
+                                    }else{
+                                        return ;
+                                    }
+                                    mediaPlayer.setPlaybackParams(mediaPlayer.getPlaybackParams().setSpeed(1.25f));
+                                    mediaPlayer.start();
+                                    mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                                        @Override
+                                        public void onCompletion(MediaPlayer mp) {
+                                            mp.stop();
+                                            mp.reset();
+                                            if(mediaPlayer!=null){
+                                                mediaPlayer.release();
+                                                mediaPlayer = null;
+                                            }
+                                        }
+                                    });
+                                }
                             }
-
                         }
                     });
                     processing = false;
@@ -436,6 +527,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    // AI 처리 함수
     private Interpreter getTfliteInterpreter(String modelPath){
         try{
             return new Interpreter(loadModelFile(MainActivity.this, modelPath));

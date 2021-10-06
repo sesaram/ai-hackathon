@@ -13,112 +13,119 @@
         android:layout_width="1000px"
         android:layout_height="1000px"/>
 
-    <LinearLayout
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="X_LEFT:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/box0"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
-    <LinearLayout
+        android:layout_margin="20dp">
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X_LEFT:   "
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/box0"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="X_RIGHT:   "
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/box2"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Y_BOTTOM: "
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/box1"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Y_TOP:    "
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/box3"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+        </TableRow>
+    </TableLayout>
+
+    <TableLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="Y_BOTTOM:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/box1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="X_RIGHT:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/box2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="Y_TOP:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/box3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="SCORE:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/score"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="left">
-        <TextView
-            android:layout_width="120dp"
-            android:layout_height="wrap_content"
-            android:text="CLASS:   "
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        <TextView
-            android:id="@+id/classIndex"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-    </LinearLayout>
+        android:layout_marginHorizontal="20dp">
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="정확도:   "
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/score"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="분류:   "
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/classIndex"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="방향:   "
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/direction"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="거리:   "
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            <TextView
+                android:id="@+id/distance"
+                android:layout_width="100dp"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </TableRow>
+    </TableLayout>
 </LinearLayout>
